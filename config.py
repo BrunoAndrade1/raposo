@@ -11,41 +11,45 @@ def configurar_pagina():
     # Remover padding padrão
     st.markdown("""
         <style>
-            .block-container {
-                padding-top: 1rem;
-                padding-bottom: 0rem;
-                padding-left: 5rem;
-                padding-right: 5rem;
-            }
-            .element-container {
-                margin-bottom: 1rem;
-            }
-            .fonte-info {
-                background-color: #262730;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                margin: 0.5rem 0;
-                border-left: 4px solid #1E88E5;
-            }
-            .filtro-info {
-                background-color: #262730;
-                padding: 1rem;
-                border-radius: 0.5rem;
-                margin: 0.5rem 0;
-                border-left: 4px solid #28a745;
-            }
-            .css-10trblm {
-                margin-bottom: 0;
+            /* Fundo geral da página */
+            .stApp {
+                background-color: #0e1117;
                 color: white;
             }
-            .css-10trblm {
-                font-size: 2rem !important;
+
+            /* Ajustando cores de texto e outros elementos */
+            .block-container {
+                color: white;
             }
-            .subtitle {
-                font-size: 1.1rem;
-                color: #9e9e9e;
-                font-style: italic;
-                margin-bottom: 1rem;
+
+            .stButton > button {
+                background-color: #1E88E5;
+                color: white;
+                border-radius: 8px;
+            }
+
+            .stSelectbox {
+                background-color: #262730;
+                color: white;
+            }
+
+            /* Links e outros elementos interativos */
+            a {
+                color: #1E88E5;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            /* Ajustando as caixas de mensagens (st.info, st.success) */
+            .fonte-info {
+                background-color: #262730 !important;
+                border-left: 4px solid #1E88E5 !important;
+            }
+            .filtro-info {
+                background-color: #262730 !important;
+                border-left: 4px solid #28a745 !important;
             }
         </style>
     """, unsafe_allow_html=True)
