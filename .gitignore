@@ -1,0 +1,5 @@
+# Ignorar o ambiente virtual
+env/
+
+# Ignorar a pasta .streamlit
+.streamlit/
