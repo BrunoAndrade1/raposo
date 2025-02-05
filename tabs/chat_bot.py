@@ -16,8 +16,6 @@ from langchain.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 
 def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, funcoes_graficos):
-    st.subheader("Chat Bot de Análise de Sinistros")
-    
     # Aplicar estilos CSS personalizados
     st.markdown("""
         <style>
@@ -27,32 +25,24 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                 color: #ffffff;
                 font-weight: bold;
                 padding: 5px 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
             .pergunta-exemplo {
                 padding: 3px 0 3px 20px;
                 color: #e0e0e0;
                 margin: 3px 0;
             }
-            .chat-container {
-                margin: 20px 0;
-                padding: 15px;
-                border-radius: 5px;
-                background-color: #1E1E1E;
-            }
             .section-divider {
                 margin: 25px 0;
                 border: none;
                 border-top: 1px solid #333;
             }
-            .stTextInput>div>div>input {
-                background-color: #1E1E1E;
-                color: white;
-                border: 1px solid #333;
-                padding: 15px;
-                font-size: 16px;
-            }
         </style>
     """, unsafe_allow_html=True)
+
+    st.subheader("Chat Bot de Análise de Sinistros")
     
     # Configurar API key
     api_key = st.secrets["openai"]["api_key"]
@@ -71,82 +61,6 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
     Pergunta: {question}
     
     Resposta:"""
-
-    # Funções para criar gráficos
-    def criar_grafico_temporal(df):
-        sinistros_por_ano = df["Data do Sinistro"].dt.year.value_counts().sort_index()
-        fig, ax = plt.subplots(figsize=(8, 4))
-        ax.bar(sinistros_por_ano.index, sinistros_por_ano.values, color="#1E88E5")
-        ax.set_xlabel("Ano")
-        ax.set_ylabel("Quantidade")
-        for i, v in enumerate(sinistros_por_ano.values):
-            ax.text(sinistros_por_ano.index[i], v, str(v), ha='center', va='bottom')
-        plt.tight_layout()
-        return fig
-
-    def criar_grafico_horario(df):
-        sinistros_por_hora = df["Hora do Sinistro"].value_counts().sort_index()
-        fig, ax = plt.subplots(figsize=(10, 4))
-        ax.plot(sinistros_por_hora.index, sinistros_por_hora.values, marker='o')
-        ax.set_xlabel("Hora do Dia")
-        ax.set_ylabel("Quantidade")
-        ax.set_xticks(range(24))
-        plt.tight_layout()
-        return fig
-
-    def criar_grafico_local(df, top_n=10):
-        top_locais = df["Logradouro"].value_counts().head(top_n)
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.barh(top_locais.index, top_locais.values, color="#1E88E5")
-        ax.set_xlabel("Quantidade")
-        ax.set_ylabel("Logradouro")
-        plt.tight_layout()
-        return fig
-
-    def criar_grafico_veiculos(df, veiculos):
-        total_por_tipo = df[veiculos].sum().sort_values(ascending=True)
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.barh(range(len(total_por_tipo)), total_por_tipo.values, color="#1E88E5")
-        ax.set_yticks(range(len(total_por_tipo)))
-        ax.set_yticklabels(total_por_tipo.index)
-        plt.tight_layout()
-        return fig
-
-    # Criar colunas para os exemplos
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("""
-            <div class="categoria">📊 Análise Temporal</div>
-            <div class="pergunta-exemplo">• Como evoluiu o número de sinistros entre 2021 e 2023?</div>
-            <div class="pergunta-exemplo">• Qual é o mês com mais registros?</div>
-            <div class="pergunta-exemplo">• Qual a média mensal de sinistros?</div>
-
-            <div class="categoria">🗺️ Análise Espacial</div>
-            <div class="pergunta-exemplo">• Onde se concentram os sinistros na cidade?</div>
-            <div class="pergunta-exemplo">• Qual a distribuição geográfica dos acidentes com motos?</div>
-            <div class="pergunta-exemplo">• Mostre o mapa de calor dos sinistros</div>
-
-            <div class="categoria">🕒 Análise por Horário</div>
-            <div class="pergunta-exemplo">• Quais são os horários mais críticos?</div>
-            <div class="pergunta-exemplo">• Como é a distribuição entre dia e noite?</div>
-            <div class="pergunta-exemplo">• Tem diferença entre dias úteis e fins de semana?</div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("""
-            <div class="categoria">📍 Análise por Local</div>
-            <div class="pergunta-exemplo">• Quais são os locais mais perigosos?</div>
-            <div class="pergunta-exemplo">• Qual KM registra mais ocorrências?</div>
-            <div class="pergunta-exemplo">• Como é a distribuição geográfica dos sinistros?</div>
-
-            <div class="categoria">🚗 Análise de Veículos</div>
-            <div class="pergunta-exemplo">• Qual tipo de veículo se envolve mais?</div>
-            <div class="pergunta-exemplo">• Como se comparam carros e motos?</div>
-            <div class="pergunta-exemplo">• Qual a proporção de cada tipo de veículo?</div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
 
     # Criar base de conhecimento
     @st.cache_resource
@@ -229,12 +143,9 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Aqui vamos manter apenas a última pergunta e resposta
-    if prompt := st.chat_input("💭 Digite sua pergunta sobre os sinistros..."):
-        # Limpar mensagens anteriores
+    # Único campo de chat (utilizando uma key única)
+    if prompt := st.chat_input("💭 Digite sua pergunta sobre os sinistros...", key="chat_input_1"):
         st.session_state.messages = []
-        
-        # Adicionar apenas a nova pergunta
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -244,9 +155,8 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                 resposta = chatbot({
                     "question": prompt + "\nConsidere as análises disponíveis no dashboard para responder."
                 })
-            
             st.markdown(resposta["answer"])
-                
+            
             # Mostrar visualização se necessário
             if any(palavra in prompt.lower() for palavra in 
                   ["gráfico", "visualizar", "mostrar", "comparar", "evolução", "distribuição", 
@@ -257,7 +167,6 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                           ["mapa", "região", "área", "localização", "geográfico", "concentração"]):
                         
                         if "moto" in prompt.lower() or "motocicleta" in prompt.lower():
-                            # Mapa de calor específico para motos
                             st.subheader("Mapa de Calor - Sinistros com Motocicletas")
                             df_moto = df_filtrado[
                                 (df_filtrado["Motocicleta envolvida"] > 0) & 
@@ -282,7 +191,6 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                             ).add_to(mapa_calor_motos)
                             folium_static(mapa_calor_motos, width=700)
                         else:
-                            # Mapa de calor geral
                             st.subheader("Mapa de Calor - Todos os Sinistros")
                             df_mapa = df_filtrado.dropna(subset=["latitude", "longitude"])
                             mapa_calor = folium.Map(
@@ -297,17 +205,17 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                             HeatMap(heat_data, radius=10, blur=15).add_to(mapa_calor)
                             folium_static(mapa_calor, width=700)
                     
-                    # Demais visualizações existentes
+                    # Outras visualizações
                     elif any(palavra in prompt.lower() for palavra in ["hora", "horário", "período"]):
-                        fig = criar_grafico_horario(df_filtrado)
+                        fig = funcoes_graficos['criar_grafico_horario'](df_filtrado)
                         st.pyplot(fig)
                     
                     elif any(palavra in prompt.lower() for palavra in ["local", "logradouro", "lugar"]):
-                        fig = criar_grafico_local(df_filtrado)
+                        fig = funcoes_graficos['criar_grafico_local'](df_filtrado)
                         st.pyplot(fig)
                     
                     elif any(palavra in prompt.lower() for palavra in ["ano", "anual", "evolução"]):
-                        fig = criar_grafico_temporal(df_filtrado)
+                        fig = funcoes_graficos['criar_grafico_temporal'](df_filtrado)
                         st.pyplot(fig)
                     
                     elif any(palavra in prompt.lower() for palavra in ["veículo", "carro", "moto"]):
@@ -319,7 +227,59 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                             "Ônibus  envolvido",
                             "Outros veículos envolvidos"
                         ]
-                        fig = criar_grafico_veiculos(df_filtrado, veiculos)
-                        st.pyplot(fig)  # Adicionar o parênteses fechando aqui
+                        fig = funcoes_graficos['criar_grafico_veiculos'](df_filtrado, veiculos)
+                        st.pyplot(fig)
 
         st.session_state.messages.append({"role": "assistant", "content": resposta["answer"]})
+
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
+
+    # Exemplos de perguntas
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+            <div class="categoria">
+                <span>📊</span>
+                <span>Análise Temporal</span>
+            </div>
+            <div class="pergunta-exemplo">• Como evoluiu o número de sinistros entre 2021 e 2023?</div>
+            <div class="pergunta-exemplo">• Qual é o mês com mais registros?</div>
+            <div class="pergunta-exemplo">• Qual a média mensal de sinistros?</div>
+
+            <div class="categoria">
+                <span>🗺️</span>
+                <span>Análise Espacial</span>
+            </div>
+            <div class="pergunta-exemplo">• Onde se concentram os sinistros na cidade?</div>
+            <div class="pergunta-exemplo">• Qual a distribuição geográfica dos acidentes com motos?</div>
+            <div class="pergunta-exemplo">• Mostre o mapa de calor dos sinistros</div>
+
+            <div class="categoria">
+                <span>🕒</span>
+                <span>Análise por Horário</span>
+            </div>
+            <div class="pergunta-exemplo">• Quais são os horários mais críticos?</div>
+            <div class="pergunta-exemplo">• Como é a distribuição entre dia e noite?</div>
+            <div class="pergunta-exemplo">• Tem diferença entre dias úteis e fins de semana?</div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+            <div class="categoria">
+                <span>📍</span>
+                <span>Análise por Local</span>
+            </div>
+            <div class="pergunta-exemplo">• Quais são os locais mais perigosos?</div>
+            <div class="pergunta-exemplo">• Qual KM registra mais ocorrências?</div>
+            <div class="pergunta-exemplo">• Como é a distribuição geográfica dos sinistros?</div>
+
+            <div class="categoria">
+                <span>🚗</span>
+                <span>Análise de Veículos</span>
+            </div>
+            <div class="pergunta-exemplo">• Qual tipo de veículo se envolve mais?</div>
+            <div class="pergunta-exemplo">• Como se comparam carros e motos?</div>
+            <div class="pergunta-exemplo">• Qual a proporção de cada tipo de veículo?</div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div class='section-divider'></div>", unsafe_allow_html=True)
