@@ -55,16 +55,16 @@ def configurar_pagina():
     with col2:
         st.title("Dashboard de Sinistros")
         st.markdown('<p class="subtitle">Análise de Sinistros de Trânsito 2021-2023</p>', unsafe_allow_html=True)
-        
+
         # Informação sobre fonte de dados
         st.info("""
-        **📊 Fonte dos Dados:**
+        📊 Fonte dos Dados:
         InfoSiga SP - Sistema de Informações Gerenciais de Acidentes de Trânsito do Estado de São Paulo
         """)
-        
+
         # Informação sobre filtros
         st.success("""
-        **🔍 Filtros Aplicados:**
+        🔍 Filtros Aplicados:
         Dados filtrados para ocorrências na Rodovia Raposo Tavares e variações relacionadas:
         • Acesso Rodovia Raposo Tavares
         • Marginal Rodovia Raposo Tavares
@@ -75,4 +75,15 @@ def configurar_pagina():
         • Viaduto Raposo Tavares
         """)
 
+    # Rodapé com link de contato
     st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="text-align: center; margin-top: 2rem;">
+            <p>Desenvolvido por <strong>Bruno Andrade de Luna</strong></p>
+            <a href="https://www.linkedin.com/in/bruno-andrade-de-luna/" target="_blank" style="color: #0A66C2; text-decoration: none;">
+                <strong>📧 Entre em contato no LinkedIn</strong>
+            </a>
+        </div>
+        """, unsafe_allow_html=True
+    )
