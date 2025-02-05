@@ -15,32 +15,28 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 
+
 def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, funcoes_graficos):
     # Aplicar estilos CSS personalizados
     st.markdown("""
         <style>
-            .categoria {
-                margin-top: 15px;
-                margin-bottom: 8px;
-                color: #ffffff;
-                font-weight: bold;
-                padding: 5px 0;
-                display: flex;
-                align-items: center;
-                gap: 8px;
+            /* Estilo específico para o título do chat bot */
+            .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4,
+            h1, h2, h3, h4, .st-emotion-cache-10trblm {
+                color: #FFFFFF !important;
+                font-weight: 600 !important;
+                letter-spacing: 0.5px !important;
             }
-            .pergunta-exemplo {
-                padding: 3px 0 3px 20px;
-                color: #e0e0e0;
-                margin: 3px 0;
+            
+            /* Força a cor branca no título */
+            .st-emotion-cache-10trblm {
+                color: #FFFFFF !important;
             }
-            .section-divider {
-                margin: 25px 0;
-                border: none;
-                border-top: 1px solid #333;
-            }
+
+            /* Outros estilos permanecem os mesmos ... */
         </style>
     """, unsafe_allow_html=True)
+
 
     st.subheader("Chat Bot de Análise de Sinistros")
     
