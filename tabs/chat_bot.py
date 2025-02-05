@@ -45,8 +45,33 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
     os.environ["OPENAI_API_KEY"] = api_key
 
     # Template para o chatbot
-    TEMPLATE = """Você é um assistente especializado em análise de dados de sinistros de trânsito.
-    Analise os dados disponíveis e responda de forma clara e objetiva.
+    TEMPLATE = """Você é um assistente especializado em análise de dados de sinistros de trânsito, focado em analisar acidentes na Rodovia Raposo Tavares e regiões relacionadas entre 2021 e 2023.
+
+    Instruções específicas:
+    1. Ao analisar dados temporais:
+       - Compare a evolução ano a ano
+       - Identifique padrões mensais
+       - Destaque tendências importantes
+
+    2. Ao analisar localização:
+       - Indique os pontos mais críticos
+       - Mencione KMs específicos quando relevante
+       - Relacione com características da via
+
+    3. Ao analisar horários:
+       - Compare períodos do dia
+       - Diferencie dias úteis e fins de semana
+       - Identifique horários de pico
+
+    4. Ao analisar tipos de veículos:
+       - Compare diferentes categorias
+       - Destaque os mais frequentes
+       - Relacione com horários ou locais quando relevante
+
+    5. Para cada análise:
+       - Forneça números específicos
+       - Explique o significado dos dados
+       - Sugira insights relevantes
 
     Dados disponíveis:
     {context}
@@ -55,6 +80,8 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
     {chat_history}
 
     Pergunta: {question}
+    
+    Responda de forma clara e direta, usando dados específicos para suportar suas análises. Se necessário, sugira a visualização de gráficos ou mapas relevantes.
     
     Resposta:"""
 
@@ -163,21 +190,28 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                           ["mapa", "região", "área", "localização", "geográfico", "concentração"]):
                         
                         if "moto" in prompt.lower() or "motocicleta" in prompt.lower():
+                            # Mapa de calor para motos
                             st.subheader("Mapa de Calor - Sinistros com Motocicletas")
                             df_moto = df_filtrado[
                                 (df_filtrado["Motocicleta envolvida"] > 0) & 
                                 df_filtrado["latitude"].notna() & 
                                 df_filtrado["longitude"].notna()
-                            ]
+                            ].copy()
+                            df_moto["latitude"] = df_moto["latitude"].astype(str).str.replace(",", ".").astype(float)
+                            df_moto["longitude"] = df_moto["longitude"].astype(str).str.replace(",", ".").astype(float)
+                            df_moto["count"] = df_moto.groupby(["latitude", "longitude"])["latitude"].transform("count")
+                            
                             mapa_calor_motos = folium.Map(
                                 location=[df_moto["latitude"].mean(), df_moto["longitude"].mean()],
                                 zoom_start=12
                             )
+                            
                             heat_data_moto = list(zip(
                                 df_moto["latitude"],
                                 df_moto["longitude"],
-                                df_moto["Motocicleta envolvida"]
+                                df_moto["count"]
                             ))
+                            
                             HeatMap(
                                 heat_data_moto,
                                 radius=15,
@@ -185,46 +219,82 @@ def tab_chat_bot(df_filtrado, df_completo, relacao_logradouro_veiculos_sorted, f
                                 min_opacity=0.5,
                                 max_zoom=15
                             ).add_to(mapa_calor_motos)
+                            
+                            # Adicionar marcadores com números
+                            for _, row in df_moto.drop_duplicates(subset=["latitude", "longitude"]).iterrows():
+                                folium.Marker(
+                                    location=[row["latitude"], row["longitude"]],
+                                    icon=folium.DivIcon(html=f'<b style="font-size: 10pt; color: red;">{int(row["count"])}</b>')
+                                ).add_to(mapa_calor_motos)
+                                
                             folium_static(mapa_calor_motos, width=700)
+                            
                         else:
+                            # Mapa de calor geral
                             st.subheader("Mapa de Calor - Todos os Sinistros")
-                            df_mapa = df_filtrado.dropna(subset=["latitude", "longitude"])
+                            df_mapa = df_filtrado.dropna(subset=["latitude", "longitude"]).copy()
+                            df_mapa["latitude"] = df_mapa["latitude"].astype(str).str.replace(",", ".").astype(float)
+                            df_mapa["longitude"] = df_mapa["longitude"].astype(str).str.replace(",", ".").astype(float)
+                            df_mapa["count"] = df_mapa.groupby(["latitude", "longitude"])["latitude"].transform("count")
+                            
                             mapa_calor = folium.Map(
                                 location=[df_mapa["latitude"].mean(), df_mapa["longitude"].mean()],
                                 zoom_start=12
                             )
+                            
                             heat_data = list(zip(
                                 df_mapa["latitude"],
                                 df_mapa["longitude"],
-                                df_mapa["Data do Sinistro"].dt.year
+                                df_mapa["count"]
                             ))
+                            
                             HeatMap(heat_data, radius=10, blur=15).add_to(mapa_calor)
+                            
+                            # Adicionar marcadores com números
+                            for _, row in df_mapa.drop_duplicates(subset=["latitude", "longitude"]).iterrows():
+                                folium.Marker(
+                                    location=[row["latitude"], row["longitude"]],
+                                    icon=folium.DivIcon(html=f'<b style="font-size: 10pt; color: black;">{int(row["count"])}</b>')
+                                ).add_to(mapa_calor)
+                                
                             folium_static(mapa_calor, width=700)
                     
-                    # Outras visualizações
+                    # Usar funções de gráficos passadas como parâmetro
                     elif any(palavra in prompt.lower() for palavra in ["hora", "horário", "período"]):
-                        fig = funcoes_graficos['criar_grafico_horario'](df_filtrado)
-                        st.pyplot(fig)
+                        try:
+                            fig = funcoes_graficos['criar_grafico_horario'](df_filtrado)
+                            st.pyplot(fig)
+                        except Exception as e:
+                            st.error("Erro ao gerar gráfico de horário: " + str(e))
                     
                     elif any(palavra in prompt.lower() for palavra in ["local", "logradouro", "lugar"]):
-                        fig = funcoes_graficos['criar_grafico_local'](df_filtrado)
-                        st.pyplot(fig)
+                        try:
+                            fig = funcoes_graficos['criar_grafico_local'](df_filtrado)
+                            st.pyplot(fig)
+                        except Exception as e:
+                            st.error("Erro ao gerar gráfico de local: " + str(e))
                     
                     elif any(palavra in prompt.lower() for palavra in ["ano", "anual", "evolução"]):
-                        fig = funcoes_graficos['criar_grafico_temporal'](df_filtrado)
-                        st.pyplot(fig)
+                        try:
+                            fig = funcoes_graficos['criar_grafico_temporal'](df_filtrado)
+                            st.pyplot(fig)
+                        except Exception as e:
+                            st.error("Erro ao gerar gráfico temporal: " + str(e))
                     
                     elif any(palavra in prompt.lower() for palavra in ["veículo", "carro", "moto"]):
-                        veiculos = [
-                            "Automóvel envolvido",
-                            "Motocicleta envolvida",
-                            "Bicicleta envolvida",
-                            "Caminhão envolvido",
-                            "Ônibus  envolvido",
-                            "Outros veículos envolvidos"
-                        ]
-                        fig = funcoes_graficos['criar_grafico_veiculos'](df_filtrado, veiculos)
-                        st.pyplot(fig)
+                        try:
+                            veiculos = [
+                                "Automóvel envolvido",
+                                "Motocicleta envolvida",
+                                "Bicicleta envolvida",
+                                "Caminhão envolvido",
+                                "Ônibus  envolvido",
+                                "Outros veículos envolvidos"
+                            ]
+                            fig = funcoes_graficos['criar_grafico_veiculos'](df_filtrado, veiculos)
+                            st.pyplot(fig)
+                        except Exception as e:
+                            st.error("Erro ao gerar gráfico de veículos: " + str(e))
 
         st.session_state.messages.append({"role": "assistant", "content": resposta["answer"]})
 
