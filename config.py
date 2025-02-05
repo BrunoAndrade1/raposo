@@ -7,10 +7,14 @@ def configurar_pagina():
         layout="wide",
         initial_sidebar_state="expanded"
     )
-
-    # Remover padding padrão
     st.markdown("""
         <style>
+            /* Remove o cabeçalho e o rodapé do Streamlit */
+            header, footer {
+                visibility: hidden;
+                height: 0;
+            }
+
             /* Fundo geral da página */
             .stApp {
                 background-color: #0e1117;
