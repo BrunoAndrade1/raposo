@@ -4,56 +4,63 @@ def configurar_pagina():
     # Configurar a página
     st.set_page_config(
         page_title="Dashboard de Sinistros",
+        page_icon="🚗",
         layout="wide",
         initial_sidebar_state="expanded"
     )
+
     st.markdown("""
         <style>
-            /* Remove o cabeçalho e o rodapé do Streamlit */
-            header, footer {
-                visibility: hidden;
-                height: 0;
+            /* Títulos e textos principais */
+            h1, h2, h3, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+            .stMarkdown p, p, .title, .subtitle {
+                color: #333333 !important;
             }
-
-            /* Fundo geral da página */
-            .stApp {
-                background-color: #0e1117;
-                color: white;
+            
+            /* Subtítulo específico */
+            .subtitle {
+                font-style: italic;
+                color: #666666 !important;
             }
-
-            /* Ajustando cores de texto e outros elementos */
-            .block-container {
-                color: white;
+            
+            /* Estilos para texto das categorias */
+            .categoria {
+                margin-top: 15px;
+                margin-bottom: 8px;
+                color: #1e88e5 !important;
+                font-weight: bold;
+                padding: 5px 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
-
-            .stButton > button {
-                background-color: #1E88E5;
-                color: white;
-                border-radius: 8px;
+            
+            /* Estilos para perguntas exemplo */
+            .pergunta-exemplo {
+                color: #333333 !important;
+                padding: 3px 0 3px 20px;
+                margin: 3px 0;
             }
-
-            .stSelectbox {
-                background-color: #262730;
-                color: white;
+            
+            /* Links e rodapé */
+            a, a:visited {
+                color: #1e88e5 !important;
             }
-
-            /* Links e outros elementos interativos */
-            a {
-                color: #1E88E5;
-                text-decoration: none;
+            
+            /* Alertas e notificações */
+            .stAlert > div {
+                color: #333333 !important;
             }
-            a:hover {
-                text-decoration: underline;
+            
+            /* Divisor de seções */
+            .section-divider {
+                border-top: 1px solid #e0e0e0;
+                margin: 25px 0;
             }
-
-            /* Ajustando as caixas de mensagens (st.info, st.success) */
-            .fonte-info {
-                background-color: #262730 !important;
-                border-left: 4px solid #1E88E5 !important;
-            }
-            .filtro-info {
-                background-color: #262730 !important;
-                border-left: 4px solid #28a745 !important;
+            
+            /* Ajuste do título da página */
+            .st-emotion-cache-10trblm {
+                color: #333333 !important;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -88,8 +95,8 @@ def configurar_pagina():
     st.markdown(
         """
         <div style="text-align: center; margin-top: 2rem;">
-            <p>Desenvolvido por <strong>Bruno Andrade de Luna</strong></p>
-            <a href="https://www.linkedin.com/in/bruno-andrade-de-luna/" target="_blank" style="color: #0A66C2; text-decoration: none;">
+            <p style="color: #333333;">Desenvolvido por <strong>Bruno Andrade de Luna</strong></p>
+            <a href="https://www.linkedin.com/in/bruno-andrade-de-luna/" target="_blank" style="color: #1e88e5;">
                 <strong>📧 Entre em contato no LinkedIn</strong>
             </a>
         </div>
